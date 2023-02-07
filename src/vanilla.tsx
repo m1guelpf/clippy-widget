@@ -5,13 +5,14 @@ import { createRoot } from 'react-dom/client'
 let root: Root
 let isInitialized = false
 
- const init = (): void => {
+const init = (): void => {
 	if (isInitialized) throw new Error('Clippy is already initialized')
 
 	const startApp = () => {
 		try {
 			if (!isInitialized) {
 				const node = document.createElement('div')
+				node.id = 'clippy-widget'
 				document.body.appendChild(node)
 
 				root = createRoot(node)
