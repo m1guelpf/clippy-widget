@@ -7,6 +7,7 @@ importers:
       '@babel/core': ^7.20.12
       '@babel/plugin-syntax-typescript': ^7.20.0
       '@fontsource/inter': ^4.5.15
+      '@microsoft/fetch-event-source': ^2.0.1
       '@types/node': 18.11.18
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
@@ -32,6 +33,7 @@ importers:
       typescript: 4.9.5
     dependencies:
       '@fontsource/inter': 4.5.15
+      '@microsoft/fetch-event-source': 2.0.1
       framer-motion: 9.0.1_biqbaboplfbrettd7655fr4n2y
       react-shadow: 20.0.0_biqbaboplfbrettd7655fr4n2y
       swr: 2.0.3_react@18.2.0
@@ -455,6 +457,10 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
+
+  /@microsoft/fetch-event-source/2.0.1:
+    resolution: {integrity: sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA==}
+    dev: false
 
   /@motionone/animation/10.15.1:
     resolution: {integrity: sha512-mZcJxLjHor+bhcPuIFErMDNyrdb2vJur8lSfMCsuCB4UyV8ILZLvK+t+pg56erv8ud9xQGK/1OGPt10agPrCyQ==}

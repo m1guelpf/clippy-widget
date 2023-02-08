@@ -1,49 +1,35 @@
+import { useMemo } from 'react'
 import root from 'react-shadow'
 import Styles from '@build/index.css'
-import type { FormEvent } from 'react'
 import SendIcon from './Icons/SendIcon'
 import useMedia from '@/hooks/useMedia'
+import { classNames } from '@/lib/utils'
+import type { FormEvent, FC } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { memo, useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import type { References, Answer, WidgetData } from '@/types'
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 
-type ClippyResponse = {
-	answer: string
-	sources: Array<{
-		page: string
-		path: string
-		title: string | null
-	}>
-}
-
-type WidgetData = {
-	id: string
-	imageUrl: string
-	copy: {
-		title: string
-		subtitle: string
-		cta: string
-		placeholder: string
-		loading: string
-	}
-}
-
-const Clippy = () => {
+const Clippy: FC = () => {
 	const media = useMedia()
 	const [query, setQuery] = useState('')
 	const [isOpen, setOpen] = useState(false)
 	const [isEditing, setEditing] = useState(false)
 	const [isLoading, setLoading] = useState(false)
-	const [response, setResponse] = useState<ClippyResponse | null>(null)
-	const { data } = useSWRImmutable<WidgetData>(
+	const [answer, setAnswer] = useState<Answer | null>(null)
+	const [references, setReferences] = useState<References | null>(null)
+
+	const { data: project } = useSWRImmutable<WidgetData>(
 		'https://api.clippy.help/widget',
 		(url: string) => fetch(url).then(res => res.json()),
 		{ revalidateOnMount: true }
 	)
 
 	const toggleOpen = useCallback(() => {
+		setAnswer(null)
+		setReferences(null)
 		setEditing(state => !state)
-		setResponse(null)
 	}, [])
 
 	const askQuestion = useCallback(
@@ -53,23 +39,46 @@ const Clippy = () => {
 
 			setLoading(true)
 
-			const response = (await fetch(`https://api.clippy.help/${data?.id}/ask`, {
+			await fetchEventSource(`https://api.clippy.help/${project?.id}/stream`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ query }),
-			}).then(res => res.json())) as ClippyResponse
+				onmessage(ev) {
+					switch (ev.id) {
+						case 'references':
+							setReferences(JSON.parse(ev.data) as References)
+							break
+
+						case 'answer':
+							setAnswer(JSON.parse(ev.data) as Answer)
+							break
+
+						default:
+							throw new Error('Unknown event')
+					}
+				},
+			})
 
 			setQuery('')
 			setEditing(false)
 			setLoading(false)
-			setResponse(response)
 		},
-		[data?.id, query]
+		[project?.id, query]
 	)
 
-	if (!data) return null
+	const sources = useMemo<References>(() => {
+		if (!references) return []
+		if (!answer) return references.slice(0, 1)
+
+		const sources = answer.sources.filter(Boolean)
+		if (sources.length === 0) return []
+
+		return sources.map(path => references.find(ref => ref.path === path)).filter(Boolean) as References
+	}, [answer, references])
+
+	if (!project) return null
 
 	return (
 		<root.div mode="open">
@@ -77,13 +86,16 @@ const Clippy = () => {
 				<Styles hidden />
 				{media == 'desktop' || isOpen ? (
 					<motion.div
-						animate={{ y: 0 }}
-						initial={{ y: '50%' }}
-						className="w-72 divide-y divide-gray-700 rounded-md border border-gray-700 bg-gradient-to-bl from-gray-800/70 via-gray-900 to-gray-900 font-sans shadow-md backdrop-blur-sm"
+						initial={{ y: '50%', width: '18rem' }}
+						animate={{ y: 0, width: answer ? '24rem' : '18rem' }}
+						transition={{ width: { type: answer ? 'spring' : 'tween', duration: 0.15 } }}
+						className={classNames(
+							'divide-y divide-gray-700 rounded-md border border-gray-700 bg-gradient-to-bl from-gray-800/70 via-gray-900 to-gray-900 font-sans shadow-md backdrop-blur-sm'
+						)}
 					>
 						<div>
 							<AnimatePresence>
-								{response ? (
+								{answer ? (
 									<div>
 										<div className="flex items-center gap-2 overflow-hidden p-3">
 											<motion.div
@@ -91,13 +103,13 @@ const Clippy = () => {
 												animate={{ opacity: 1 }}
 												className="min-w-0 flex-1"
 											>
-												<p className="mt-1 text-sm text-gray-300">{response.answer}</p>
-												{response.sources.filter(Boolean).length > 0 && (
+												<p className="mt-1 text-sm text-gray-300">{answer.answer}</p>
+												{sources.length > 0 && (
 													<div className="mt-2">
 														<div className="space-y-1 text-xs text-gray-500">
-															{response.sources.filter(Boolean).map(source => (
+															{sources.map((source, i) => (
 																<a
-																	key={source.page}
+																	key={i}
 																	href={source.path}
 																	className="block hover:underline"
 																>
@@ -111,36 +123,50 @@ const Clippy = () => {
 										</div>
 									</div>
 								) : isLoading ? (
-									<div>
-										<div className="flex items-center gap-2 p-3">
+									<div className="p-3">
+										<div className="flex items-center gap-2">
 											<motion.div
 												initial={{ opacity: 0 }}
 												animate={{ opacity: 1 }}
 												className="flex-1"
 											>
 												<h3 className="text-sm font-bold text-gray-200">Loading...</h3>
-												<p className="mt-1 text-xs text-gray-500">{data.copy.loading}</p>
+												<p className="mt-1 text-xs text-gray-500">{project.copy.loading}</p>
 											</motion.div>
 											<div className="relative h-12 w-12 shrink-0">
 												<motion.img
 													layoutId="bunny"
-													src={data.imageUrl}
+													src={project.imageUrl}
 													alt="avatar"
 													className="rounded-full"
 												/>
 											</div>
 										</div>
+										{sources.length > 0 && (
+											<motion.div
+												initial={{ opacity: 0, y: '50%' }}
+												animate={{ opacity: 1, y: 0 }}
+											>
+												<div className="space-y-1 text-xs text-gray-500">
+													{sources.map((source, i) => (
+														<a key={i} href={source.path} className="block hover:underline">
+															{source.title ?? source.page} &rarr;
+														</a>
+													))}
+												</div>
+											</motion.div>
+										)}
 									</div>
 								) : (
 									<div className="flex items-center gap-2 p-3">
 										<motion.div exit={{ opacity: 0 }} className="flex-1">
-											<h3 className="text-sm font-bold text-gray-200">{data.copy.title}</h3>
-											<p className="mt-1 text-xs text-gray-500">{data.copy.subtitle}</p>
+											<h3 className="text-sm font-bold text-gray-200">{project.copy.title}</h3>
+											<p className="mt-1 text-xs text-gray-500">{project.copy.subtitle}</p>
 										</motion.div>
 										<div className="relative h-12 w-12 shrink-0">
 											<motion.img
 												layoutId="bunny"
-												src={data.imageUrl}
+												src={project.imageUrl}
 												alt="avatar"
 												className="rounded-full"
 											/>
@@ -174,7 +200,7 @@ const Clippy = () => {
 											value={query}
 											onChange={e => setQuery(e.target.value)}
 											className="w-full bg-transparent px-5 py-3 pr-8 text-sm text-white focus:outline-none"
-											placeholder={data.copy.placeholder}
+											placeholder={project.copy.placeholder}
 											// eslint-disable-next-line jsx-a11y/no-autofocus
 											autoFocus
 										/>
@@ -195,7 +221,7 @@ const Clippy = () => {
 										onClick={toggleOpen}
 										className="flex w-full justify-center px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-gray-800/70"
 									>
-										<p>{data.copy.cta}</p>
+										<p>{project.copy.cta}</p>
 									</motion.button>
 								)}
 							</AnimatePresence>
@@ -203,7 +229,7 @@ const Clippy = () => {
 					</motion.div>
 				) : (
 					<motion.button onClick={() => setOpen(true)} className="relative h-12 w-12 shrink-0">
-						<motion.img layoutId="bunny" src={data.imageUrl} alt="avatar" className="rounded-full" />
+						<motion.img layoutId="bunny" src={project.imageUrl} alt="avatar" className="rounded-full" />
 					</motion.button>
 				)}
 			</div>
