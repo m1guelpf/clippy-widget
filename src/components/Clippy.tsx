@@ -1,17 +1,18 @@
 import root from 'react-shadow'
 import Styles from '@build/index.css'
+import type { FormEvent } from 'react'
 import SendIcon from './Icons/SendIcon'
 import useMedia from '@/hooks/useMedia'
 import useSWRImmutable from 'swr/immutable'
+import { memo, useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FormEvent, memo, useCallback, useState } from 'react'
 
 type ClippyResponse = {
 	answer: string
 	sources: Array<{
 		page: string
 		path: string
-		title: string
+		title: string | null
 	}>
 }
 
@@ -36,7 +37,7 @@ const Clippy = () => {
 	const [response, setResponse] = useState<ClippyResponse | null>(null)
 	const { data } = useSWRImmutable<WidgetData>(
 		'https://api.clippy.help/widget',
-		url => fetch(url).then(res => res.json()),
+		(url: string) => fetch(url).then(res => res.json()),
 		{ revalidateOnMount: true }
 	)
 
@@ -52,48 +53,48 @@ const Clippy = () => {
 
 			setLoading(true)
 
-			const response = await fetch(`https://api.clippy.help/${data?.id}/query`, {
+			const response = (await fetch(`https://api.clippy.help/${data?.id}/ask`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ query }),
-			}).then(res => res.json())
+			}).then(res => res.json())) as ClippyResponse
 
 			setQuery('')
 			setEditing(false)
 			setLoading(false)
 			setResponse(response)
 		},
-		[query]
+		[data?.id, query]
 	)
 
 	if (!data) return null
 
 	return (
 		<root.div mode="open">
-			<div className="fixed z-50 bottom-5 right-5">
+			<div className="fixed bottom-5 right-5 z-50">
 				<Styles hidden />
 				{media == 'desktop' || isOpen ? (
 					<motion.div
 						animate={{ y: 0 }}
 						initial={{ y: '50%' }}
-						className="font-sans backdrop-blur-sm w-72 divide-y divide-gray-700 rounded-md border border-gray-700 shadow-md bg-gradient-to-bl from-gray-800/70 via-gray-900 to-gray-900"
+						className="w-72 divide-y divide-gray-700 rounded-md border border-gray-700 bg-gradient-to-bl from-gray-800/70 via-gray-900 to-gray-900 font-sans shadow-md backdrop-blur-sm"
 					>
 						<div>
 							<AnimatePresence>
 								{response ? (
 									<div>
-										<div className="flex gap-2 px-3 py-3 items-center overflow-hidden">
+										<div className="flex items-center gap-2 overflow-hidden p-3">
 											<motion.div
 												initial={{ opacity: 0 }}
 												animate={{ opacity: 1 }}
-												className="flex-1 min-w-0"
+												className="min-w-0 flex-1"
 											>
 												<p className="mt-1 text-sm text-gray-300">{response.answer}</p>
-												{response.sources?.filter(Boolean)?.length > 0 && (
+												{response.sources.filter(Boolean).length > 0 && (
 													<div className="mt-2">
-														<div className="text-xs text-gray-500 space-y-1">
+														<div className="space-y-1 text-xs text-gray-500">
 															{response.sources.filter(Boolean).map(source => (
 																<a
 																	key={source.page}
@@ -111,16 +112,16 @@ const Clippy = () => {
 									</div>
 								) : isLoading ? (
 									<div>
-										<div className="flex gap-2 px-3 py-3 items-center">
+										<div className="flex items-center gap-2 p-3">
 											<motion.div
 												initial={{ opacity: 0 }}
 												animate={{ opacity: 1 }}
 												className="flex-1"
 											>
-												<h3 className="text-sm text-gray-200 font-bold">Loading...</h3>
+												<h3 className="text-sm font-bold text-gray-200">Loading...</h3>
 												<p className="mt-1 text-xs text-gray-500">{data.copy.loading}</p>
 											</motion.div>
-											<div className="relative w-12 h-12 flex-shrink-0">
+											<div className="relative h-12 w-12 shrink-0">
 												<motion.img
 													layoutId="bunny"
 													src={data.imageUrl}
@@ -131,12 +132,12 @@ const Clippy = () => {
 										</div>
 									</div>
 								) : (
-									<div className="flex gap-2 px-3 py-3 items-center">
+									<div className="flex items-center gap-2 p-3">
 										<motion.div exit={{ opacity: 0 }} className="flex-1">
-											<h3 className="text-sm text-gray-200 font-bold">{data.copy.title}</h3>
+											<h3 className="text-sm font-bold text-gray-200">{data.copy.title}</h3>
 											<p className="mt-1 text-xs text-gray-500">{data.copy.subtitle}</p>
 										</motion.div>
-										<div className="relative w-12 h-12 flex-shrink-0">
+										<div className="relative h-12 w-12 shrink-0">
 											<motion.img
 												layoutId="bunny"
 												src={data.imageUrl}
@@ -155,7 +156,7 @@ const Clippy = () => {
 										initial={{ opacity: 0 }}
 										animate={{ opacity: 1 }}
 										transition={{ duration: 0.05 }}
-										className="flex w-full justify-center px-5 py-3 text-sm font-medium text-white cursor-wait animate-pulse"
+										className="flex w-full animate-pulse cursor-wait justify-center px-5 py-3 text-sm font-medium text-white"
 									>
 										<p>Thinking...</p>
 									</motion.div>
@@ -164,26 +165,27 @@ const Clippy = () => {
 										initial={{ opacity: 0 }}
 										animate={{ opacity: 1 }}
 										transition={{ duration: 0.05 }}
-										onSubmit={askQuestion}
-										className="w-full relative"
+										onSubmit={e => void askQuestion(e)}
+										className="relative w-full"
 										key="two"
 									>
 										<input
 											type="text"
 											value={query}
 											onChange={e => setQuery(e.target.value)}
-											className="w-full text-sm bg-transparent text-white px-5 pr-8 py-3 focus:outline-none"
+											className="w-full bg-transparent px-5 py-3 pr-8 text-sm text-white focus:outline-none"
 											placeholder={data.copy.placeholder}
+											// eslint-disable-next-line jsx-a11y/no-autofocus
 											autoFocus
 										/>
 										<motion.button
 											initial={{ opacity: 0 }}
 											animate={{ opacity: query ? 1 : 0 }}
 											disabled={!query}
-											className="absolute right-2 inset-y-0 px-2 -mx-2"
+											className="absolute inset-y-0 right-2 -mx-2 px-2"
 											type="submit"
 										>
-											<SendIcon className="w-4 h-4 text-white" />
+											<SendIcon className="h-4 w-4 text-white" />
 										</motion.button>
 									</motion.form>
 								) : (
@@ -191,7 +193,7 @@ const Clippy = () => {
 										exit={{ opacity: 0 }}
 										transition={{ duration: 0.05 }}
 										onClick={toggleOpen}
-										className="flex w-full justify-center px-5 py-3 text-sm font-bold text-white hover:bg-gray-800/70 transition duration-300"
+										className="flex w-full justify-center px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-gray-800/70"
 									>
 										<p>{data.copy.cta}</p>
 									</motion.button>
@@ -200,7 +202,7 @@ const Clippy = () => {
 						</div>
 					</motion.div>
 				) : (
-					<motion.button onClick={() => setOpen(true)} className="relative w-12 h-12 flex-shrink-0">
+					<motion.button onClick={() => setOpen(true)} className="relative h-12 w-12 shrink-0">
 						<motion.img layoutId="bunny" src={data.imageUrl} alt="avatar" className="rounded-full" />
 					</motion.button>
 				)}
