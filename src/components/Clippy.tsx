@@ -39,7 +39,7 @@ const Clippy: FC = () => {
 
 			setLoading(true)
 
-			await fetchEventSource(`https://api.clippy.help/${project?.id}/stream`, {
+			await fetchEventSource(`https://api.clippy.help/widget/stream`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const Clippy: FC = () => {
 			setEditing(false)
 			setLoading(false)
 		},
-		[project?.id, query]
+		[query]
 	)
 
 	const sources = useMemo<References>(() => {
