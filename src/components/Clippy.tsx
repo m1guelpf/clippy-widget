@@ -136,7 +136,7 @@ const Clippy: FC = () => {
 											<div className="relative h-12 w-12 shrink-0">
 												<motion.img
 													layoutId="bunny"
-													src={project.imageUrl}
+													src={project.image_url}
 													alt="avatar"
 													className="rounded-full"
 												/>
@@ -166,7 +166,7 @@ const Clippy: FC = () => {
 										<div className="relative h-12 w-12 shrink-0">
 											<motion.img
 												layoutId="bunny"
-												src={project.imageUrl}
+												src={project.image_url}
 												alt="avatar"
 												className="rounded-full"
 											/>
@@ -229,7 +229,7 @@ const Clippy: FC = () => {
 					</motion.div>
 				) : (
 					<motion.button onClick={() => setOpen(true)} className="relative h-12 w-12 shrink-0">
-						<motion.img layoutId="bunny" src={project.imageUrl} alt="avatar" className="rounded-full" />
+						<motion.img layoutId="bunny" src={project.image_url} alt="avatar" className="rounded-full" />
 					</motion.button>
 				)}
 			</div>
