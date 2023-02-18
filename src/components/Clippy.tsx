@@ -113,7 +113,7 @@ const Clippy: FC = () => {
 																	href={source.path}
 																	className="block hover:underline"
 																>
-																	{source.title ?? source.page} &rarr;
+																	{source.title ?? source.page_title} &rarr;
 																</a>
 															))}
 														</div>
@@ -150,7 +150,7 @@ const Clippy: FC = () => {
 												<div className="space-y-1 text-xs text-gray-500">
 													{sources.map((source, i) => (
 														<a key={i} href={source.path} className="block hover:underline">
-															{source.title ?? source.page} &rarr;
+															{source.title ?? source.page_title} &rarr;
 														</a>
 													))}
 												</div>

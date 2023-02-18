@@ -18,6 +18,6 @@ export type Answer = {
 export type References = Array<{
 	path: string
 	text: string
-	page: string
+	page_title: string
 	title: string | null
 }>
