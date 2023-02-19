@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import root from 'react-shadow'
+import remarkGfm from 'remark-gfm'
+import components from './markdown'
 import Styles from '@build/index.css'
 import SendIcon from './Icons/SendIcon'
 import useMedia from '@/hooks/useMedia'
 import { classNames } from '@/lib/utils'
 import type { FormEvent, FC } from 'react'
+import ReactMarkdown from 'react-markdown'
 import useSWRImmutable from 'swr/immutable'
 import { memo, useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -103,7 +106,14 @@ const Clippy: FC = () => {
 												animate={{ opacity: 1 }}
 												className="min-w-0 flex-1"
 											>
-												<p className="mt-1 text-sm text-gray-300">{answer.answer}</p>
+												<ReactMarkdown
+													components={components}
+													remarkPlugins={[remarkGfm]}
+													allowedElements={['p', 'a', 'code']}
+													className="mt-1 text-sm text-gray-300"
+												>
+													{answer.answer}
+												</ReactMarkdown>
 												{sources.length > 0 && (
 													<div className="mt-2">
 														<div className="space-y-1 text-xs text-gray-500">

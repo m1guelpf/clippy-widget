@@ -1,6 +1,6 @@
 {
 	"name": "clippy-widget",
-	"version": "0.1.16",
+	"version": "0.1.17",
 	"private": false,
 	"type": "module",
 	"types": "./build/index.d.ts",
@@ -37,7 +37,9 @@
 		"@fontsource/inter": "^4.5.15",
 		"@microsoft/fetch-event-source": "^2.0.1",
 		"framer-motion": "^9.0.1",
+		"react-markdown": "^8.0.5",
 		"react-shadow": "^20.0.0",
+		"remark-gfm": "^3.0.1",
 		"swr": "^2.0.3"
 	},
 	"devDependencies": {
