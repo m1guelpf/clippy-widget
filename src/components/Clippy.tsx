@@ -10,8 +10,8 @@ import type { FormEvent, FC } from 'react'
 import ReactMarkdown from 'react-markdown'
 import useSWRImmutable from 'swr/immutable'
 import { memo, useCallback, useState } from 'react'
+import type { References, WidgetData } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
-import type { References, Answer, WidgetData } from '@/types'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 
 const Clippy: FC = () => {
@@ -20,7 +20,7 @@ const Clippy: FC = () => {
 	const [isOpen, setOpen] = useState(false)
 	const [isEditing, setEditing] = useState(false)
 	const [isLoading, setLoading] = useState(false)
-	const [answer, setAnswer] = useState<Answer | null>(null)
+	const [answer, setAnswer] = useState<string>('')
 	const [references, setReferences] = useState<References | null>(null)
 
 	const { data: project } = useSWRImmutable<WidgetData>(
@@ -30,7 +30,7 @@ const Clippy: FC = () => {
 	)
 
 	const toggleOpen = useCallback(() => {
-		setAnswer(null)
+		setAnswer('')
 		setReferences(null)
 		setEditing(state => !state)
 	}, [])
@@ -54,8 +54,12 @@ const Clippy: FC = () => {
 							setReferences(JSON.parse(ev.data) as References)
 							break
 
-						case 'answer':
-							setAnswer(JSON.parse(ev.data) as Answer)
+						case 'partial_answer':
+							setAnswer(answer => answer + ev.data)
+							break
+
+						case 'error':
+							setAnswer('Something went wrong! Please try again.')
 							break
 
 						default:
@@ -71,15 +75,7 @@ const Clippy: FC = () => {
 		[query]
 	)
 
-	const sources = useMemo<References>(() => {
-		if (!references) return []
-		if (!answer) return references.slice(0, 1)
-
-		const sources = answer.sources.filter(Boolean)
-		if (sources.length === 0) return []
-
-		return sources.map(path => references.find(ref => ref.path === path)).filter(Boolean) as References
-	}, [answer, references])
+	const sources = useMemo<References>(() => references?.slice(0, 1) ?? [], [references])
 
 	if (!project) return null
 
@@ -112,23 +108,8 @@ const Clippy: FC = () => {
 													allowedElements={['p', 'a', 'code']}
 													className="mt-1 text-sm text-gray-300"
 												>
-													{answer.answer}
+													{answer}
 												</ReactMarkdown>
-												{sources.length > 0 && (
-													<div className="mt-2">
-														<div className="space-y-1 text-xs text-gray-500">
-															{sources.map((source, i) => (
-																<a
-																	key={i}
-																	href={source.path}
-																	className="block hover:underline"
-																>
-																	{source.title ?? source.page_title} &rarr;
-																</a>
-															))}
-														</div>
-													</div>
-												)}
 											</motion.div>
 										</div>
 									</div>
@@ -145,7 +126,7 @@ const Clippy: FC = () => {
 											</motion.div>
 											<div className="relative h-12 w-12 shrink-0">
 												<motion.img
-													layoutId="bunny"
+													layoutId="clippyImg"
 													src={project.image_url}
 													alt="avatar"
 													className="rounded-full"
@@ -175,7 +156,7 @@ const Clippy: FC = () => {
 										</motion.div>
 										<div className="relative h-12 w-12 shrink-0">
 											<motion.img
-												layoutId="bunny"
+												layoutId="clippyImg"
 												src={project.image_url}
 												alt="avatar"
 												className="rounded-full"
@@ -239,7 +220,12 @@ const Clippy: FC = () => {
 					</motion.div>
 				) : (
 					<motion.button onClick={() => setOpen(true)} className="relative h-12 w-12 shrink-0">
-						<motion.img layoutId="bunny" src={project.image_url} alt="avatar" className="rounded-full" />
+						<motion.img
+							layoutId="clippyImg"
+							src={project.image_url}
+							alt="avatar"
+							className="rounded-full"
+						/>
 					</motion.button>
 				)}
 			</div>

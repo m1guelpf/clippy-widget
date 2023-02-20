@@ -10,11 +10,6 @@ export type WidgetData = {
 	}
 }
 
-export type Answer = {
-	answer: string
-	sources: string[]
-}
-
 export type References = Array<{
 	path: string
 	text: string
