@@ -25,7 +25,7 @@ const Clippy: FC = () => {
 
 	const { data: project } = useSWRImmutable<WidgetData>(
 		'https://api.clippy.help/widget',
-		(url: string) => fetch(url).then(res => res.json()),
+		(url: string) => fetch(url, { referrerPolicy: 'unsafe-url' }).then(res => res.json()),
 		{ revalidateOnMount: true }
 	)
 
@@ -44,10 +44,11 @@ const Clippy: FC = () => {
 
 			await fetchEventSource(`https://api.clippy.help/widget/stream`, {
 				method: 'POST',
+				referrerPolicy: 'unsafe-url',
+				body: JSON.stringify({ query }),
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ query }),
 				onmessage(ev) {
 					switch (ev.id) {
 						case 'references':
