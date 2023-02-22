@@ -142,7 +142,7 @@ const Clippy: FC = () => {
 												<div className="space-y-1 text-xs text-gray-500">
 													{sources.map((source, i) => (
 														<a key={i} href={source.path} className="block hover:underline">
-															{source.title ?? source.page_title} &rarr;
+															{source.title || source.page_title} &rarr;
 														</a>
 													))}
 												</div>
@@ -184,7 +184,7 @@ const Clippy: FC = () => {
 										animate={{ opacity: 1 }}
 										transition={{ duration: 0.05 }}
 										onSubmit={e => void askQuestion(e)}
-										className="relative w-full"
+										className="relative w-full m-0"
 										key="two"
 									>
 										<input
