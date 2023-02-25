@@ -1,3 +1,5 @@
-import ClippyClient from './components/ClippyClient'
+import { search } from './lib/api'
+import Clippy from './components/ClippyClient'
 
-export default ClippyClient
+export { search }
+export default Clippy
