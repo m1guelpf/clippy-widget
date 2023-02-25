@@ -82,12 +82,12 @@ const Clippy: FC = () => {
 
 	return (
 		<root.div mode="open">
-			<div className="fixed bottom-5 right-5 z-50">
+			<div className="fixed bottom-5 right-5 pl-5 md:pl-0 z-50">
 				<Styles hidden />
 				{media == 'desktop' || isOpen ? (
 					<motion.div
 						initial={{ y: '50%', width: '18rem' }}
-						animate={{ y: 0, width: answer ? '24rem' : '18rem' }}
+						animate={{ y: 0, width: answer ? (media == 'mobile' ? 'auto' : '24rem') : '18rem' }}
 						transition={{ width: { type: answer ? 'spring' : 'tween', duration: 0.15 } }}
 						className={classNames(
 							'divide-y divide-gray-700 rounded-md border border-gray-700 bg-gradient-to-bl from-gray-800/70 via-gray-900 to-gray-900 font-sans shadow-md backdrop-blur-sm'
