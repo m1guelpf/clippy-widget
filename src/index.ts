@@ -1,3 +1,3 @@
-import Clippy from './components/Clippy'
+import ClippyClient from './components/ClippyClient'
 
-export default Clippy
+export default ClippyClient
