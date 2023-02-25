@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import root from 'react-shadow'
 import remarkGfm from 'remark-gfm'
 import components from './markdown'
@@ -6,6 +5,7 @@ import Styles from '@build/index.css'
 import SendIcon from './Icons/SendIcon'
 import useMedia from '@/hooks/useMedia'
 import { classNames } from '@/lib/utils'
+import { useEffect, useMemo } from 'react'
 import type { FormEvent, FC } from 'react'
 import ReactMarkdown from 'react-markdown'
 import useSWRImmutable from 'swr/immutable'
@@ -28,6 +28,22 @@ const Clippy: FC = () => {
 		(url: string) => fetch(url, { referrerPolicy: 'unsafe-url' }).then(res => res.json()),
 		{ revalidateOnMount: true }
 	)
+
+	useEffect(() => {
+		if (!project) return
+		console.groupCollapsed(`${project.name}'s AI assistant is powered by Clippy`)
+		console.log(`__
+/  \\
+|  |    Clippy lets you add a conversational AI
+@  @      assistant to your documentation in minutes.
+|  |
+|| |/
+|| ||   Visit https://clippy.help to learn more.
+|\\_/|
+\\___/
+    `)
+		console.groupEnd()
+	}, [project])
 
 	const toggleOpen = useCallback(() => {
 		setAnswer('')
@@ -125,14 +141,19 @@ const Clippy: FC = () => {
 												<h3 className="text-sm font-bold text-gray-200">Loading...</h3>
 												<p className="mt-1 text-xs text-gray-500">{project.copy.loading}</p>
 											</motion.div>
-											<div className="relative h-12 w-12 shrink-0">
+											<a
+												target="_blank"
+												href="https://clippy.help"
+												className="relative h-12 w-12 shrink-0"
+											>
 												<motion.img
+													title="Powered by clippy.help"
 													layoutId="clippyImg"
 													src={project.image_url}
 													alt="avatar"
 													className="rounded-full"
 												/>
-											</div>
+											</a>
 										</div>
 										{sources.length > 0 && (
 											<motion.div
@@ -155,14 +176,19 @@ const Clippy: FC = () => {
 											<h3 className="text-sm font-bold text-gray-200">{project.copy.title}</h3>
 											<p className="mt-1 text-xs text-gray-500">{project.copy.subtitle}</p>
 										</motion.div>
-										<div className="relative h-12 w-12 shrink-0">
+										<a
+											target="_blank"
+											href="https://clippy.help"
+											className="relative h-12 w-12 shrink-0"
+										>
 											<motion.img
+												title="Powered by clippy.help"
 												layoutId="clippyImg"
 												src={project.image_url}
 												alt="avatar"
 												className="rounded-full"
 											/>
-										</div>
+										</a>
 									</div>
 								)}
 							</AnimatePresence>

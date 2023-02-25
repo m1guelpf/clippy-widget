@@ -1,5 +1,6 @@
 export type WidgetData = {
 	id: string
+	name: string
 	image_url: string
 	copy: {
 		title: string
