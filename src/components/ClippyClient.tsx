@@ -1,5 +1,5 @@
-import { FC, useEffect } from 'react'
 import { ClippyStore } from '@/lib/store'
+import { FC, memo, useEffect } from 'react'
 
 declare global {
 	interface Window {
@@ -15,7 +15,7 @@ type Props = {
 
 const ClippyClient: FC<Props> = ({ theme }) => {
 	useEffect(() => {
-		if (document.getElementById('clippy-widget')) return
+		if (document.getElementById('clippy-script')) return
 
 		const script = document.createElement('script')
 		script.src = 'https://unpkg.com/clippy-widget'
@@ -32,4 +32,4 @@ const ClippyClient: FC<Props> = ({ theme }) => {
 	return null
 }
 
-export default ClippyClient
+export default memo(ClippyClient)
