@@ -27,7 +27,7 @@ export type ClippyStore = {
 	reset: () => void
 }
 
-const useClippyStore = create<ClippyStore>()(set => ({
+const useClippyStore = create<ClippyStore>()((set, get) => ({
 	query: '',
 	answer: '',
 	theme: 'dark',
@@ -41,7 +41,7 @@ const useClippyStore = create<ClippyStore>()(set => ({
 	overwriteAnswer: answer => set({ answer }),
 	setReferences: references => set({ references }),
 	setMobileShow: showOnMobile => set({ showOnMobile }),
-	addToAnswer: text => set(state => ({ answer: (state.answer + text).replace('\\n', '\n') })),
+	addToAnswer: text => set({ answer: (get().answer + text).replace('\\n', '\n') }),
 
 	reset: () => set({ query: '', answer: '', state: ClippyState.Splash, references: null }),
 }))
