@@ -1,6 +1,6 @@
 {
 	"name": "clippy-widget",
-	"version": "0.1.27",
+	"version": "0.1.28",
 	"private": false,
 	"type": "module",
 	"types": "./build/index.d.ts",

@@ -98,6 +98,7 @@ const Clippy: FC = () => {
 							break
 
 						case 'partial_answer':
+							setState(ClippyState.Finished)
 							addToAnswer(ev.data)
 							break
 
@@ -112,7 +113,6 @@ const Clippy: FC = () => {
 			})
 
 			setQuery('')
-			setState(ClippyState.Finished)
 		},
 		[query]
 	)
