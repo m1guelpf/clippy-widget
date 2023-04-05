@@ -72,10 +72,10 @@ const Clippy: FC = () => {
 	}, [project])
 
 	const toggleOpen = useCallback(() => {
-		if (state != ClippyState.Splash) return reset()
+		if (state != ClippyState.Splash) reset()
 
 		setState(ClippyState.UserTyping)
-	}, [])
+	}, [state])
 
 	const askQuestion = useCallback(
 		async (event: FormEvent<HTMLFormElement>) => {
